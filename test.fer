@@ -1,0 +1,21 @@
+let io = import('std/io');
+let os = import('std/os');
+
+let bws = import('bws/bws');
+
+let accessToken = os.getEnv('BWS_ACCESS_TOKEN');
+
+if accessToken == nil {
+    io.println('Required env variable `BWS_ACCESS_TOKEN` not found!');
+    feral.exit(1);
+}
+
+let env = bws.getEnv(accessToken);
+io.cprintln('{by}BWS variables{0}:');
+for e in env.each() {
+    io.cprintln('-- {c}', e.0, '{0}: {g}', e.1, '{0}');
+}
+
+bws.loadEnv(accessToken, true);
+
+io.cprintln('{by}Env{0}{{{bc}__Notes{0}}: {g}', os.getEnv('__Notes'));

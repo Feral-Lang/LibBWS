@@ -1,0 +1,32 @@
+let io = import('std/io');
+let os = import('std/os');
+let map = import('std/map');
+let vec = import('std/vec');
+
+let getEnv = fn(accessToken) {
+    let output = vec.new(refs = true);
+    let res = os.exec(out = output, 'bws', '--access-token', accessToken, 'secret', 'list', '-o', 'env', '^2>&1');
+    if res != 0 {
+        raise('failed to load environment: ', output.join('\n'));
+    }
+    let env = map.new(refs = true);
+    for e in output.each() {
+        if e.find('=') < 0 { continue; }
+        let split = e.split('=', 1);
+        let val = split[1];
+        if val.back() == '"' { val.pop(); }
+        if val.front() == '"' { val.erase(0); }
+        env.insert(split[0], val);
+    }
+    if env.empty() {
+        raise('loaded empty environment, make sure the machine account has access to the project');
+    }
+    return env;
+};
+
+let loadEnv = fn(accessToken, overwrite = false) {
+    let env = getEnv(accessToken);
+    for e in env.each() {
+        os.setEnv(e.0, e.1, overwrite);
+    }
+};
